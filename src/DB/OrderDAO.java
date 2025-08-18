@@ -222,4 +222,22 @@ public class OrderDAO implements IOrderRepository {
 
         return orders;
     }
+
+    @Override
+    public void update(Order order) {
+        String sql = "UPDATE orders SET status = ? WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, order.getStatus().name());
+            ps.setInt(2, order.getId());
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                logger.log(Level.WARNING, "No order found with id: " + order.getId());
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating order status for id: " + order.getId(), e);
+            throw new RuntimeException("Failed to update order status", e);
+        }
+    }
 }

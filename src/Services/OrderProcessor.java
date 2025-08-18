@@ -77,6 +77,9 @@ public class OrderProcessor {
                 order.markReady();
                 break;
         }
+
+        // Save the status change to database
+        orders.update(order);
     }
 
     /**
@@ -116,6 +119,103 @@ public class OrderProcessor {
 
         System.out.print("\nPress Enter to continue...");
         scanner.nextLine();
+    }
+
+    /**
+     * Manage order statuses - allows admin to change order status
+     */
+    public void manageOrderStatuses(Scanner scanner) {
+        while (true) {
+            System.out.println("\n🔄 MANAGE ORDER STATUSES");
+            System.out.println("=".repeat(50));
+
+            try {
+                List<Order> pendingOrders = orders.findPendingOrders();
+
+                if (pendingOrders.isEmpty()) {
+                    System.out.println("📭 No pending orders found.");
+                    System.out.print("\nPress Enter to return to main menu...");
+                    scanner.nextLine();
+                    return;
+                }
+
+                System.out.printf("%-8s | %-12s | %-15s | %-20s%n",
+                    "Order ID", "Student ID", "Status", "Date");
+                System.out.println("-".repeat(60));
+
+                for (Order order : pendingOrders) {
+                    String dateText = order.getOrderDate().toString().substring(0, 16);
+                    System.out.printf("%-8d | %-12d | %-15s | %-20s%n",
+                        order.getId(),
+                        order.getStudentId(),
+                        order.getStatus(),
+                        dateText);
+                }
+
+                System.out.print("\nEnter Order ID to update status (or 0 to go back): ");
+                String input = scanner.nextLine().trim();
+
+                if (input.equals("0")) {
+                    return;
+                }
+
+                try {
+                    int orderId = Integer.parseInt(input);
+                    Order selectedOrder = pendingOrders.stream()
+                        .filter(order -> order.getId() == orderId)
+                        .findFirst()
+                        .orElse(null);
+
+                    if (selectedOrder == null) {
+                        System.out.println("❌ Invalid order ID or order is not pending.");
+                        continue;
+                    }
+
+                    // Show status change options
+                    System.out.println("\nCurrent status: " + selectedOrder.getStatus());
+                    System.out.println("Available status changes:");
+
+                    if (selectedOrder.getStatus() == OrderStatus.NEW) {
+                        System.out.println("1. Mark as PREPARING");
+                        System.out.println("2. Mark as READY");
+                    } else if (selectedOrder.getStatus() == OrderStatus.PREPARING) {
+                        System.out.println("1. Mark as READY");
+                    }
+
+                    System.out.print("Choose option: ");
+                    String statusChoice = scanner.nextLine().trim();
+
+                    OrderStatus newStatus = null;
+                    if (selectedOrder.getStatus() == OrderStatus.NEW) {
+                        if (statusChoice.equals("1")) {
+                            newStatus = OrderStatus.PREPARING;
+                        } else if (statusChoice.equals("2")) {
+                            newStatus = OrderStatus.READY;
+                        }
+                    } else if (selectedOrder.getStatus() == OrderStatus.PREPARING) {
+                        if (statusChoice.equals("1")) {
+                            newStatus = OrderStatus.READY;
+                        }
+                    }
+
+                    if (newStatus != null) {
+                        advanceStatus(orderId, newStatus);
+                        System.out.println("✅ Order #" + orderId + " status updated to " + newStatus);
+                    } else {
+                        System.out.println("❌ Invalid choice.");
+                    }
+
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Please enter a valid order ID.");
+                } catch (Exception e) {
+                    System.out.println("❌ Error updating order status: " + e.getMessage());
+                }
+
+            } catch (Exception e) {
+                System.out.println("❌ Error loading orders: " + e.getMessage());
+                break;
+            }
+        }
     }
 
     private MenuItem findMenuItemById(int itemId) {

@@ -182,10 +182,11 @@ public class SystemHandler {
             System.out.println("3. ✏️  Edit Menu Item");
             System.out.println("4. 🗑️  Remove Menu Item");
             System.out.println("5. 📊 View All Orders");
-            System.out.println("6. 👥 View All Students");
-            System.out.println("7. 🚪 Admin Logout");
+            System.out.println("6. 🔄 Manage Order Statuses");
+            System.out.println("7. 👥 View All Students");
+            System.out.println("8. 🚪 Admin Logout");
             System.out.println("=".repeat(60));
-            System.out.print("👉 Choose option (1-7): ");
+            System.out.print("👉 Choose option (1-8): ");
 
             int choice = getIntInput();
 
@@ -206,13 +207,16 @@ public class SystemHandler {
                     orderProcessor.viewAllOrders(scanner);
                     break;
                 case 6:
-                    adminManager.viewAllStudents(scanner);
+                    orderProcessor.manageOrderStatuses(scanner);
                     break;
                 case 7:
+                    adminManager.viewAllStudents(scanner);
+                    break;
+                case 8:
                     adminLogout();
                     return;
                 default:
-                    System.out.println("❌ Invalid option! Please choose 1-7.");
+                    System.out.println("❌ Invalid option! Please choose 1-8.");
             }
         }
     }
