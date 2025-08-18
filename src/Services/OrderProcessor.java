@@ -12,6 +12,7 @@ import Values.Selection;
 import Enums.OrderStatus;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class OrderProcessor {
     private final IOrderRepository orders;
@@ -76,6 +77,45 @@ public class OrderProcessor {
                 order.markReady();
                 break;
         }
+    }
+
+    /**
+     * View all orders with formatted output for admin
+     */
+    public void viewAllOrders(Scanner scanner) {
+        System.out.println("\n📋 ALL ORDERS");
+        System.out.println("=".repeat(80));
+
+        try {
+            OrderDAO orderDAO = new OrderDAO();
+            List<Order> orders = orderDAO.findAll();
+
+            if (orders.isEmpty()) {
+                System.out.println("📭 No orders found.");
+            } else {
+                System.out.printf("%-8s | %-12s | %-12s | %-15s | %-20s | %s%n",
+                    "Order ID", "Student ID", "Total", "Status", "Date", "Items");
+                System.out.println("-".repeat(80));
+
+                for (Order order : orders) {
+                    String itemsText = order.getItems().size() + " item(s)";
+                    String dateText = order.getOrderDate().toString().substring(0, 16);
+
+                    System.out.printf("%-8d | %-12d | %-12s | %-15s | %-20s | %s%n",
+                        order.getId(),
+                        order.getStudentId(),
+                        order.total() != null ? order.total().toString() : "N/A",
+                        order.getStatus(),
+                        dateText,
+                        itemsText);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Error loading orders: " + e.getMessage());
+        }
+
+        System.out.print("\nPress Enter to continue...");
+        scanner.nextLine();
     }
 
     private MenuItem findMenuItemById(int itemId) {
