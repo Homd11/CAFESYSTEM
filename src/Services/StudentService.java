@@ -381,19 +381,28 @@ public class StudentService implements IStudentService {
         }
 
         try {
-            Order order = orderProcessor.placeOrder(student, selections);
-            Money originalTotal = order.total();
+            // Calculate order total before payment
+            Order tempOrder = new Order(student.getId());
+            for (Selection selection : selections) {
+                MenuItem menuItem = findMenuItemById(menuItems, selection.getItemId());
+                if (menuItem != null) {
+                    tempOrder.addItem(menuItem, selection.getQty());
+                }
+            }
 
+            Money originalTotal = tempOrder.total();
             Money finalTotal = originalTotal;
             boolean discountApplied = false;
+
+            // Apply discounts if available
             if (DiscountManager.hasAvailableDiscounts(student)) {
                 finalTotal = DiscountManager.applyDiscounts(student, originalTotal);
                 discountApplied = true;
             }
 
-            System.out.println("\n✅ ORDER PLACED SUCCESSFULLY!");
-            System.out.println("🆔 Order ID: " + order.getId());
-
+            // Show order summary before payment
+            System.out.println("\n📋 ORDER SUMMARY");
+            System.out.println("=".repeat(40));
             if (discountApplied) {
                 System.out.println("💰 Original Total: " + originalTotal);
                 Money discountAmount = new Money(originalTotal.getAmount().doubleValue() - finalTotal.getAmount().doubleValue(), originalTotal.getCurrency());
@@ -402,16 +411,38 @@ public class StudentService implements IStudentService {
             } else {
                 System.out.println("💰 Total Amount: " + finalTotal);
             }
+            System.out.println("=".repeat(40));
 
-            System.out.println("📅 Order Date: " + order.getOrderDate());
-            System.out.println("📊 Status: " + order.getStatus());
-            System.out.println("🎁 Loyalty Points Earned: " + (int)finalTotal.getAmount().doubleValue());
+            // Process payment and place order
+            Order order = orderProcessor.placeOrderWithPayment(student, selections, scanner);
 
-            System.out.print("\nPress Enter to continue...");
-            scanner.nextLine();
+            if (order != null) {
+                System.out.println("\n🎉 ORDER CONFIRMED!");
+                System.out.println("=".repeat(40));
+                System.out.println("🆔 Order ID: " + order.getId());
+                System.out.println("📅 Order Date: " + order.getOrderDate());
+                System.out.println("📊 Status: " + order.getStatus());
+                System.out.println("⏰ Estimated Time: 10-15 minutes");
+                System.out.println("=".repeat(40));
+                System.out.println("💡 You can check your order status from the main menu!");
+            } else {
+                System.out.println("❌ Order was not placed due to payment issues.");
+            }
+
         } catch (Exception e) {
-            System.out.println("❌ Order failed: " + e.getMessage());
+            System.out.println("❌ Error placing order: " + e.getMessage());
         }
+
+        System.out.print("\nPress Enter to continue...");
+        scanner.nextLine();
+    }
+
+    // Helper method to find menu item by ID
+    private MenuItem findMenuItemById(List<MenuItem> menuItems, int itemId) {
+        return menuItems.stream()
+                .filter(item -> item.getId() == itemId)
+                .findFirst()
+                .orElse(null);
     }
 
     private void showOrderDetails(Student student, int orderId, Scanner scanner) {

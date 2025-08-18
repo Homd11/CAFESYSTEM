@@ -3,13 +3,16 @@ package Services;
 import Core.Order;
 import Core.Student;
 import Core.MenuItem;
+import Core.Payment;
 import DB.OrderDAO;
 import DB.MenuDAO;
+import DB.PaymentDAO;
 import Interfaces.IOrderRepository;
 import Interfaces.IMenuProvide;
 import Interfaces.ILoyaltyService;
 import Values.Selection;
 import Enums.OrderStatus;
+import Enums.PaymentMethod;
 
 import java.util.List;
 import java.util.Scanner;
@@ -57,6 +60,82 @@ public class OrderProcessor {
         if (order.total() != null) {
             loyalty.awardPoints(student, order.total());
         }
+
+        return order;
+    }
+
+    /**
+     * Place order with payment processing
+     * @param student The student placing the order
+     * @param selections List of menu item selections
+     * @param scanner Scanner for payment input
+     * @return Order object if successful, null if payment failed
+     */
+    public Order placeOrderWithPayment(Student student, List<Selection> selections, Scanner scanner) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
+        if (selections == null || selections.isEmpty()) {
+            throw new IllegalArgumentException("Selections cannot be null or empty");
+        }
+
+        Order order = new Order(student.getId());
+
+        // Add items to order based on selections
+        for (Selection selection : selections) {
+            MenuItem menuItem = findMenuItemById(selection.getItemId());
+            if (menuItem == null) {
+                throw new IllegalArgumentException("Menu item not found: " + selection.getItemId());
+            }
+            order.addItem(menuItem, selection.getQty());
+        }
+
+        // Process payment before saving the order
+        PaymentProcessor paymentProcessor = new PaymentProcessor();
+        boolean paymentSuccess = paymentProcessor.processInteractivePayment(scanner, order.total());
+
+        if (!paymentSuccess) {
+            System.out.println("❌ Order cancelled due to payment failure.");
+            return null;
+        }
+
+        // Save the order only after successful payment
+        orders.save(order);
+
+        // Save payment record
+        try {
+            PaymentDAO paymentDAO = new PaymentDAO();
+
+            // Create payment record
+            Payment payment = new Payment(order.getId(), getPaymentMethodFromProcessor(paymentProcessor), order.total());
+            payment.setSuccessful(true);
+
+            // Set transaction details if available
+            if (paymentProcessor.getLastUsedPaymentMethod() != null) {
+                String details = paymentProcessor.getPaymentConfirmation();
+                if (details.contains("Transaction ID:")) {
+                    String transactionId = details.substring(details.indexOf("Transaction ID:") + 15).trim();
+                    payment.setTransactionId(transactionId);
+                } else if (details.contains("Auth Code:")) {
+                    String authCode = details.substring(details.indexOf("Auth Code:") + 10).trim();
+                    payment.setAuthorizationCode(authCode);
+                }
+            }
+
+            paymentDAO.save(payment);
+
+        } catch (Exception e) {
+            System.out.println("⚠️ Warning: Payment processed but failed to save payment record: " + e.getMessage());
+        }
+
+        // Award loyalty points
+        if (order.total() != null) {
+            loyalty.awardPoints(student, order.total());
+        }
+
+        System.out.println("✅ Order placed successfully!");
+        System.out.println("📧 Order ID: " + order.getId());
+        System.out.println("🎁 Loyalty points awarded!");
 
         return order;
     }
@@ -224,5 +303,25 @@ public class OrderProcessor {
                 .filter(item -> item.getId() == itemId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Helper method to extract payment method from payment processor
+     */
+    private PaymentMethod getPaymentMethodFromProcessor(PaymentProcessor processor) {
+        if (processor.getLastUsedPaymentMethod() == null) {
+            return PaymentMethod.CASH; // Default fallback
+        }
+
+        String methodName = processor.getLastUsedPaymentMethod().getPaymentMethodName();
+        if (methodName.contains("Cash")) {
+            return PaymentMethod.CASH;
+        } else if (methodName.contains("Visa")) {
+            return PaymentMethod.VISA;
+        } else if (methodName.contains("MasterCard")) {
+            return PaymentMethod.MASTERCARD;
+        }
+
+        return PaymentMethod.CASH; // Default fallback
     }
 }
