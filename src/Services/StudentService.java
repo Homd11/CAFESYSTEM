@@ -26,6 +26,16 @@ public class StudentService implements IStudentService {
     private MenuManager menuManager;
     private OrderProcessor orderProcessor;
 
+    // Constructor with dependency injection (follows DIP)
+    public StudentService(StudentManager studentManager, LoyaltyProgram loyaltyProgram,
+                         MenuManager menuManager, OrderProcessor orderProcessor) {
+        this.studentManager = studentManager;
+        this.loyaltyProgram = loyaltyProgram;
+        this.menuManager = menuManager;
+        this.orderProcessor = orderProcessor;
+    }
+
+    // Default constructor for backwards compatibility
     public StudentService() {
         this.studentManager = new StudentManager();
         this.loyaltyProgram = new LoyaltyProgram();
