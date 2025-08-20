@@ -153,4 +153,16 @@ public class SystemService implements ISystemService {
             System.out.println("⚠️  Could not create sample students: " + e.getMessage());
         }
     }
+
+    /**
+     * Get all menu items for GUI
+     */
+    @Override
+    public List<MenuItem> getAllMenuItems() {
+        try {
+            return menuManager.listItems();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load menu items: " + e.getMessage(), e);
+        }
+    }
 }

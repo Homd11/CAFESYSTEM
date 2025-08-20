@@ -140,6 +140,68 @@ public class OrderProcessor {
         return order;
     }
 
+    /**
+     * GUI-compatible method for placing orders with payment
+     * Does not require Scanner input - suitable for GUI applications
+     */
+    public boolean placeOrderWithPayment(Student student, List<Selection> selections, PaymentMethod paymentMethod) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
+        if (selections == null || selections.isEmpty()) {
+            throw new IllegalArgumentException("Selections cannot be null or empty");
+        }
+
+        try {
+            Order order = new Order(student.getId());
+
+            // Add items to order based on selections
+            for (Selection selection : selections) {
+                // Selection class only has itemId, so always find by ID
+                MenuItem menuItem = findMenuItemById(selection.getItemId());
+
+                if (menuItem == null) {
+                    throw new IllegalArgumentException("Menu item not found: " + selection.getItemId());
+                }
+                order.addItem(menuItem, selection.getQty());
+            }
+
+            // Process payment automatically (GUI doesn't need interactive payment)
+            PaymentProcessor paymentProcessor = new PaymentProcessor();
+            boolean paymentSuccess = paymentProcessor.processPayment(order.total(), paymentMethod);
+
+            if (!paymentSuccess) {
+                return false;
+            }
+
+            // Save the order only after successful payment
+            orders.save(order);
+
+            // Save payment record
+            try {
+                PaymentDAO paymentDAO = new PaymentDAO();
+                Payment payment = new Payment(order.getId(), paymentMethod, order.total());
+                payment.setSuccessful(true);
+                payment.setTransactionId("GUI-" + System.currentTimeMillis()); // Simple transaction ID for GUI
+                paymentDAO.save(payment);
+            } catch (Exception e) {
+                // Payment processed but failed to save record - log but don't fail the order
+                System.err.println("Warning: Payment processed but failed to save payment record: " + e.getMessage());
+            }
+
+            // Award loyalty points
+            if (order.total() != null) {
+                loyalty.awardPoints(student, order.total());
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("Error placing order: " + e.getMessage());
+            return false;
+        }
+    }
+
     public void advanceStatus(int orderId, OrderStatus newStatus) {
         Order order = orders.findById(orderId);
         if (order == null) {

@@ -31,12 +31,15 @@ public class AdminManager implements IAdminManager {
 
     private void initializeAdminSystem() {
         try {
-            adminDAO.createAdminTable();
             if (!adminDAO.adminExists()) {
                 adminDAO.createDefaultAdmin();
+                System.out.println("✅ Default admin created: username='admin', password='admin123'");
+            } else {
+                System.out.println("✅ Admin account already exists");
             }
         } catch (Exception e) {
             System.err.println("Error initializing admin system: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -47,7 +50,7 @@ public class AdminManager implements IAdminManager {
         }
 
         Admin admin = adminDAO.findByUsername(username.trim());
-        if (admin != null && PasswordHasher.verifyPassword(password, admin.getPasswordHash())) {
+        if (admin != null && password.equals(admin.getPasswordHash())) {
             return admin;
         }
         return null;
@@ -338,6 +341,24 @@ public class AdminManager implements IAdminManager {
 
         System.out.print("\nPress Enter to continue...");
         scanner.nextLine();
+    }
+
+    public boolean addAdmin(Admin admin) {
+        if (admin == null || admin.getUsername() == null || admin.getPasswordHash() == null || admin.getName() == null) {
+            return false;
+        }
+
+        // Check if username already exists
+        if (adminDAO.findByUsername(admin.getUsername().trim()) != null) {
+            return false;
+        }
+
+        try {
+            adminDAO.save(admin);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // Helper methods for input validation

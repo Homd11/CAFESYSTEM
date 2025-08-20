@@ -20,25 +20,6 @@ public class AdminDAO {
         this.conn = connection;
     }
 
-    public void createAdminTable() {
-        String sql = """
-            CREATE TABLE IF NOT EXISTS admins (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
-                name VARCHAR(100) NOT NULL,
-                role VARCHAR(50) DEFAULT 'ADMIN',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """;
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error creating admins table", e);
-        }
-    }
-
     public void save(Admin admin) {
         String sql = "INSERT INTO admins (username, password_hash, name, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {

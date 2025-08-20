@@ -17,3 +17,4 @@ public interface IAdminManager {
     void editMenuItem(Scanner scanner);
     void removeMenuItem(Scanner scanner);
 }
+

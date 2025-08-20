@@ -497,4 +497,23 @@ public class StudentService implements IStudentService {
             }
         }
     }
+
+    // GUI-compatible methods implementation
+    public Student registerStudent(String name, String studentCode) {
+        try {
+            // StudentManager.register() only takes name, it generates the student code automatically
+            return studentManager.register(name);
+        } catch (Exception e) {
+            throw new RuntimeException("Registration failed: " + e.getMessage(), e);
+        }
+    }
+
+    public Student loginStudent(String studentCode) {
+        try {
+            // Use the correct method name from StudentManager
+            return studentManager.login(studentCode);
+        } catch (Exception e) {
+            throw new RuntimeException("Login failed: " + e.getMessage(), e);
+        }
+    }
 }
