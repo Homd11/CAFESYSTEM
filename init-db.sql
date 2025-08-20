@@ -1,6 +1,15 @@
 CREATE DATABASE IF NOT EXISTS CafeteriaDB;
 USE CafeteriaDB;
 
+-- Clean up existing data first
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS loyalty_accounts;
+DROP TABLE IF EXISTS menu_items;
+DROP TABLE IF EXISTS admins;
+
 -- Loyalty Accounts (لازم الأول عشان students بتشاور عليه)
 CREATE TABLE loyalty_accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,52 +68,33 @@ CREATE TABLE payments (
     FOREIGN KEY (orderId) REFERENCES orders(id)
 );
 
--- Selections (بيشاور على orders و menu_items)
-CREATE TABLE selections (
+-- Create admin table
+CREATE TABLE admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    orderId INT NOT NULL,
-    itemId INT NOT NULL,
-    qty INT NOT NULL,
-    FOREIGN KEY (orderId) REFERENCES orders(id),
-    FOREIGN KEY (itemId) REFERENCES menu_items(id)
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Discounts (مستقلة، للـloyalty program)
-CREATE TABLE discounts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    amount DECIMAL(10,2) NOT NULL,
-    description VARCHAR(100)
-);
-
--- Sales Reports (تتملأ من reporting service)
-CREATE TABLE sales_reports (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    from_date DATE,
-    to_date DATE,
-    total_sales DECIMAL(12,2),
-    currency VARCHAR(3) DEFAULT 'EGP'
-);
-
--- Redemption Reports (تتملأ من loyalty service)
-CREATE TABLE redemption_reports (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    from_date DATE,
-    to_date DATE,
-    total_redemptions INT,
-    total_points INT
-);
-
--- Insert some sample data
+-- Insert ONLY the loyalty accounts we actually need (exactly 3)
 INSERT INTO loyalty_accounts (points) VALUES (0), (50), (100);
 
+-- Insert exactly 3 students with their corresponding loyalty accounts
 INSERT INTO students (studentCode, name, loyaltyAccountId) VALUES
 ('ST001', 'Ahmed Mohamed', 1),
-('ST002', 'Sara Ali', 2),
+('ST002', 'Fatma Ali', 2),
 ('ST003', 'Omar Hassan', 3);
 
 INSERT INTO menu_items (name, description, price_amount, price_currency, category) VALUES
-('Chicken Sandwich', 'Grilled chicken with vegetables', 25.00, 'EGP', 'MAIN_COURSE'),
-('Pizza Slice', 'Cheese pizza slice', 20.00, 'EGP', 'MAIN_COURSE'),
-('Chips', 'Crispy potato chips', 10.00, 'EGP', 'SNACK'),
-('Cola', 'Cold cola drink', 8.00, 'EGP', 'DRINK'),
-('Water', 'Bottled water', 5.00, 'EGP', 'DRINK');
+('Burger', 'Delicious beef burger', 25.00, 'EGP', 'MAIN_COURSE'),
+('Pizza', 'Margherita pizza slice', 15.00, 'EGP', 'MAIN_COURSE'),
+('Sandwich', 'Club sandwich', 20.00, 'EGP', 'MAIN_COURSE'),
+('Chips', 'Crispy potato chips', 8.00, 'EGP', 'SNACK'),
+('Cookies', 'Chocolate chip cookies', 10.00, 'EGP', 'SNACK'),
+('Cola', 'Cold cola drink', 5.00, 'EGP', 'DRINK'),
+('Orange Juice', 'Fresh orange juice', 8.00, 'EGP', 'DRINK'),
+('Water', 'Bottled water', 3.00, 'EGP', 'DRINK');
+
+-- Insert default admin (username: admin, password: admin123)
+INSERT INTO admins (username, password_hash) VALUES
+('admin', '$2a$10$rZ7G.zQa8mYl5z9x1Y2B0uKZ8qF5vH3p2wM9nC4xR6tL8sE7dQ1vG');
