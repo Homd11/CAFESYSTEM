@@ -381,7 +381,11 @@ public class AdminDashboardController {
         viewOrderButton.setStyle(getInfoButtonStyle());
         viewOrderButton.setOnAction(e -> viewSelectedOrder());
 
-        orderActions.getChildren().add(viewOrderButton);
+        Button editStatusButton = new Button("📝 Edit Order Status");
+        editStatusButton.setStyle(getWarningButtonStyle());
+        editStatusButton.setOnAction(e -> editOrderStatus());
+
+        orderActions.getChildren().addAll(viewOrderButton, editStatusButton);
 
         content.getChildren().addAll(titleLabel, statsBar, ordersListView, orderActions);
 
@@ -1020,6 +1024,120 @@ public class AdminDashboardController {
         if (selectedOrder != null) {
             mainApp.showOrderDetails(selectedOrder);
         }
+    }
+
+    private void editOrderStatus() {
+        Order selectedOrder = ordersListView.getSelectionModel().getSelectedItem();
+        if (selectedOrder == null) {
+            mainApp.showErrorDialog("No Selection", "Please select an order to edit");
+            return;
+        }
+
+        // Create a custom dialog with ComboBox for status selection
+        Dialog<OrderStatus> dialog = new Dialog<>();
+        dialog.setTitle("Edit Order Status");
+        dialog.setHeaderText("Update the status of Order #" + selectedOrder.getId() +
+                           "\nCurrent Status: " + selectedOrder.getStatus());
+
+        // Create form content
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(20));
+        grid.setVgap(10);
+        grid.setHgap(10);
+
+        Label statusLabel = new Label("New Status:");
+        statusLabel.setFont(Font.font("Arial", FontWeight.MEDIUM, 14));
+
+        ComboBox<OrderStatus> statusCombo = new ComboBox<>(FXCollections.observableArrayList(OrderStatus.values()));
+        statusCombo.setValue(selectedOrder.getStatus());
+        statusCombo.setPrefWidth(200);
+
+        // Add visual styling to status options
+        statusCombo.setCellFactory(param -> new ListCell<OrderStatus>() {
+            @Override
+            protected void updateItem(OrderStatus status, boolean empty) {
+                super.updateItem(status, empty);
+                if (empty || status == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(status.toString());
+                    switch (status) {
+                        case NEW:
+                            setStyle("-fx-text-fill: #dc3545;"); // Red
+                            break;
+                        case PREPARING:
+                            setStyle("-fx-text-fill: #ffc107;"); // Yellow
+                            break;
+                        case READY:
+                            setStyle("-fx-text-fill: #28a745;"); // Green
+                            break;
+                    }
+                }
+            }
+        });
+
+        grid.add(statusLabel, 0, 0);
+        grid.add(statusCombo, 1, 0);
+
+        // Add order details for context
+        Label orderInfoLabel = new Label("Order Details:");
+        orderInfoLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+
+        String orderDetails = String.format("Student ID: %d\nDate: %s\nTotal: %s",
+            selectedOrder.getStudentId(),
+            selectedOrder.getOrderDate(),
+            selectedOrder.total() != null ?
+                String.format("%.2f %s", selectedOrder.total().getAmount(), selectedOrder.total().getCurrency()) :
+                "0.00 EGP"
+        );
+
+        Label orderDetailsLabel = new Label(orderDetails);
+        orderDetailsLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+        orderDetailsLabel.setTextFill(Color.GRAY);
+
+        grid.add(orderInfoLabel, 0, 1);
+        grid.add(orderDetailsLabel, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Add buttons
+        ButtonType updateButtonType = new ButtonType("Update Status", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        // Convert result
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                return statusCombo.getValue();
+            }
+            return null;
+        });
+
+        // Show dialog and handle result
+        dialog.showAndWait().ifPresent(newStatus -> {
+            if (newStatus != selectedOrder.getStatus()) {
+                try {
+                    OrderStatus oldStatus = selectedOrder.getStatus();
+                    selectedOrder.setStatus(newStatus);
+
+                    // Update order status in database
+                    OrderDAO orderDAO = new OrderDAO();
+                    orderDAO.update(selectedOrder);
+
+                    mainApp.showSuccessDialog("Success",
+                        String.format("Order #%d status updated from %s to %s!",
+                            selectedOrder.getId(),
+                            oldStatus.toString(),
+                            newStatus.toString()));
+
+                    loadOrders(); // Refresh the orders list
+                } catch (Exception e) {
+                    mainApp.showErrorDialog("Error", "Failed to update order status: " + e.getMessage());
+                }
+            } else {
+                mainApp.showInfoDialog("No Changes", "Order status was not changed.");
+            }
+        });
     }
 
     // Analytics methods
