@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/src/module-info.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/module-info.java" />
+              <option name="originalContent" value="module iti.cafeteria {&#10;    requires javafx.controls;&#10;    requires javafx.fxml;&#10;    requires java.sql;&#10;    requires java.desktop;&#10;&#10;    exports GUI;&#10;    exports Core;&#10;    exports Services;&#10;    exports DB;&#10;    exports Enums;&#10;    exports Values;&#10;    exports Interfaces;&#10;    exports app;&#10;}&#10;" />
+              <option name="updatedContent" value="module iti.cafeteria {&#10;    requires javafx.controls;&#10;    requires javafx.fxml;&#10;    requires java.sql;&#10;    requires java.desktop;&#10;&#10;    exports GUI;&#10;    exports Core;&#10;    exports Services;&#10;    exports DB;&#10;    exports Enums;&#10;    exports Values;&#10;    exports Interfaces;&#10;    exports app;&#10;    &#10;    // Allow JavaFX to access our GUI classes&#10;    opens GUI to javafx.fxml;&#10;    opens app to javafx.fxml;&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

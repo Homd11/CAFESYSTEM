@@ -33,9 +33,9 @@ public class AdminManager implements IAdminManager {
         try {
             if (!adminDAO.adminExists()) {
                 adminDAO.createDefaultAdmin();
-                System.out.println("✅ Default admin created: username='admin', password='admin123'");
+                // System.out.println("✅ Default admin created: username='admin', password='admin123'");
             } else {
-                System.out.println("✅ Admin account already exists");
+                // System.out.println("✅ Admin account already exists");
             }
         } catch (Exception e) {
             System.err.println("Error initializing admin system: " + e.getMessage());

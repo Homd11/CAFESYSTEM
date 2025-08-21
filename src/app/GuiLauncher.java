@@ -20,29 +20,24 @@ public class GuiLauncher {
     private static final String MAIN_CLASS = "GUI.Gui";
 
     public static void main(String[] args) {
-        System.out.println("🚀 Starting ITI Cafeteria JavaFX Application...");
-
         GuiLauncher launcher = new GuiLauncher();
 
         try {
-            // Step 1: Validate environment
+            // Step 1: Validate environment (silent)
             if (!launcher.validateEnvironment()) {
-                System.err.println("❌ Environment validation failed!");
                 return;
             }
 
-            // Step 2: Compile the project
+            // Step 2: Compile the project (silent)
             if (!launcher.compileProject()) {
-                System.err.println("❌ Compilation failed!");
                 return;
             }
 
-            // Step 3: Run the GUI application
+            // Step 3: Run the GUI application (silent)
             launcher.runApplication();
 
         } catch (Exception e) {
-            System.err.println("❌ Error launching application: " + e.getMessage());
-            e.printStackTrace();
+            // Silent failure - no console output
         }
     }
 
@@ -50,31 +45,22 @@ public class GuiLauncher {
      * Validates that all required paths and files exist
      */
     private boolean validateEnvironment() {
-        System.out.println("🔍 Validating environment...");
-
         // Check Java
         String javacPath = JAVA_HOME + "/bin/javac.exe";
         if (!new File(javacPath).exists()) {
-            System.err.println("❌ Java JDK not found at: " + JAVA_HOME);
-            System.err.println("   Please ensure Java 21 is installed in the correct location.");
             return false;
         }
 
         // Check JavaFX
         if (!new File(JAVAFX_PATH).exists()) {
-            System.err.println("❌ JavaFX not found at: " + JAVAFX_PATH);
-            System.err.println("   Please download and extract JavaFX SDK 21 to the lib/javafx/ directory.");
             return false;
         }
 
         // Check MySQL Connector
         if (!new File(MYSQL_CONNECTOR).exists()) {
-            System.err.println("❌ MySQL Connector not found at: " + MYSQL_CONNECTOR);
-            System.err.println("   Please ensure mysql-connector-j-9.4.0.jar is in the lib/ directory.");
             return false;
         }
 
-        System.out.println("✅ Environment validation successful!");
         return true;
     }
 
@@ -82,8 +68,6 @@ public class GuiLauncher {
      * Compiles the Java project with proper JavaFX and MySQL dependencies
      */
     private boolean compileProject() {
-        System.out.println("🔨 Compiling Java files...");
-
         try {
             // Create output directory
             File outDir = new File(OUTPUT_DIR);
@@ -114,24 +98,17 @@ public class GuiLauncher {
             addSourceFiles(command, "src/Interfaces/");
             addSourceFiles(command, "src/app/");
 
-            // Execute compilation
+            // Execute compilation silently
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
+            pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+            pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
 
             // Wait for compilation to complete
             int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                System.out.println("✅ Compilation successful!");
-                return true;
-            } else {
-                System.err.println("❌ Compilation failed with exit code: " + exitCode);
-                return false;
-            }
+            return exitCode == 0;
 
         } catch (IOException | InterruptedException e) {
-            System.err.println("❌ Error during compilation: " + e.getMessage());
             return false;
         }
     }
@@ -152,12 +129,9 @@ public class GuiLauncher {
     }
 
     /**
-     * Runs the compiled JavaFX application with warning suppression
+     * Runs the compiled JavaFX application with complete output suppression
      */
     private void runApplication() {
-        System.out.println("🎯 Starting GUI application...");
-        System.out.println("⏳ Please wait for the application window to appear...");
-
         try {
             // Build runtime command with warning suppression
             List<String> command = new ArrayList<>();
@@ -179,31 +153,30 @@ public class GuiLauncher {
             command.add("--add-opens");
             command.add("javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED");
 
-            // Suppress specific warnings
+            // Comprehensive warning suppression
             command.add("-Djava.util.logging.config.file=");
             command.add("-Dprism.verbose=false");
             command.add("-Djavafx.animation.pulse=false");
             command.add("-Dprism.dirtyopts=false");
+            command.add("-Dprism.debug=false");
+            command.add("-Dprism.trace=false");
+            command.add("-Djavafx.pulseLogger=false");
+            command.add("-Dcom.sun.javafx.isLoggingEnabled=false");
 
             command.add("-cp");
             command.add(OUTPUT_DIR + ";" + MYSQL_CONNECTOR);
             command.add(MAIN_CLASS);
 
-            // Execute the application
+            // Execute the application with complete output suppression
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.inheritIO(); // This allows the JavaFX application to show its GUI
+            pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+            pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
-
-            System.out.println("✅ GUI application started successfully!");
-            System.out.println("📱 The ITI Cafeteria application window should now be visible.");
-            System.out.println("🔇 JavaFX warnings have been suppressed for cleaner output.");
-
             // Wait for the application to finish
             int exitCode = process.waitFor();
-            System.out.println("🏁 Application finished with exit code: " + exitCode);
 
         } catch (IOException | InterruptedException e) {
-            System.err.println("❌ Error running application: " + e.getMessage());
+            // Silent failure
         }
     }
 }

@@ -39,7 +39,7 @@ public class SystemService implements ISystemService {
         try {
             List<MenuItem> existingItems = menuManager.listItems();
             if (existingItems.isEmpty()) {
-                System.out.println("📋 Initializing comprehensive sample data...");
+                // System.out.println("📋 Initializing comprehensive sample data...");
 
                 // Main Courses
                 menuManager.addItem("Classic Beef Burger", "Juicy beef patty with lettuce, tomato, and special sauce",
@@ -107,15 +107,15 @@ public class SystemService implements ISystemService {
                 menuManager.addItem("Popcorn", "Buttered popcorn",
                     new Money(6.0, Currency.EGP), Category.SNACK);
 
-                System.out.println("✅ Comprehensive menu with 30 items added successfully!");
-                System.out.println("🍔 Main Courses: 8 items");
-                System.out.println("🥤 Drinks: 12 items");
-                System.out.println("🍿 Snacks: 10 items");
+                // System.out.println("✅ Comprehensive menu with 30 items added successfully!");
+                // System.out.println("🍔 Main Courses: 8 items");
+                // System.out.println("🥤 Drinks: 12 items");
+                // System.out.println("🍿 Snacks: 10 items");
 
                 initializeSampleStudents();
             }
         } catch (Exception e) {
-            System.out.println("⚠️  Could not initialize sample data: " + e.getMessage());
+            // System.out.println("⚠️  Could not initialize sample data: " + e.getMessage());
         }
     }
 
@@ -124,7 +124,7 @@ public class SystemService implements ISystemService {
      */
     private void initializeSampleStudents() {
         try {
-            System.out.println("👥 Creating sample students with loyalty points...");
+            // System.out.println("👥 Creating sample students with loyalty points...");
 
             Student student1 = studentManager.register("Ahmed Mohamed Ali");
             student1.getAccount().add(50);
@@ -140,17 +140,17 @@ public class SystemService implements ISystemService {
 
             Student student5 = studentManager.register("Mohamed Tarek Said");
 
-            System.out.println("✅ Sample students created:");
-            System.out.println("   " + student1.getStudentCode() + " - " + student1.getName() + " (50 points)");
-            System.out.println("   " + student2.getStudentCode() + " - " + student2.getName() + " (150 points)");
-            System.out.println("   " + student3.getStudentCode() + " - " + student3.getName() + " (25 points)");
-            System.out.println("   " + student4.getStudentCode() + " - " + student4.getName() + " (200 points)");
-            System.out.println("   " + student5.getStudentCode() + " - " + student5.getName() + " (0 points)");
+            // System.out.println("✅ Sample students created:");
+            // System.out.println("   " + student1.getStudentCode() + " - " + student1.getName() + " (50 points)");
+            // System.out.println("   " + student2.getStudentCode() + " - " + student2.getName() + " (150 points)");
+            // System.out.println("   " + student3.getStudentCode() + " - " + student3.getName() + " (25 points)");
+            // System.out.println("   " + student4.getStudentCode() + " - " + student4.getName() + " (200 points)");
+            // System.out.println("   " + student5.getStudentCode() + " - " + student5.getName() + " (0 points)");
 
-            System.out.println("\n💡 You can login with any of these student codes to test the system!");
+            // System.out.println("\n💡 You can login with any of these student codes to test the system!");
 
         } catch (Exception e) {
-            System.out.println("⚠️  Could not create sample students: " + e.getMessage());
+            // System.out.println("⚠️  Could not create sample students: " + e.getMessage());
         }
     }
 
