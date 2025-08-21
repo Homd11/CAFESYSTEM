@@ -127,13 +127,13 @@ public class LoginController {
     }
 
     private Tab createStudentRegisterTab() {
-        Tab tab = new Tab("📝 Student Register");
+        Tab tab = new Tab("📝 Register");
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(30));
         content.setAlignment(Pos.CENTER);
 
-        Label titleLabel = new Label("Join Our Community!");
+        Label titleLabel = new Label("Student Registration");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         titleLabel.setTextFill(Color.DARKGREEN);
 
@@ -149,21 +149,13 @@ public class LoginController {
         nameField.setStyle(getTextFieldStyle());
         nameField.setPrefHeight(40);
 
-        Label codeLabel = new Label("Student Code:");
-        codeLabel.setFont(Font.font("Arial", FontWeight.MEDIUM, 14));
-
-        TextField regCodeField = new TextField();
-        regCodeField.setPromptText("Enter your student code");
-        regCodeField.setStyle(getTextFieldStyle());
-        regCodeField.setPrefHeight(40);
-
         Button registerButton = new Button("📝 Register");
         registerButton.setStyle(getSuccessButtonStyle());
         registerButton.setPrefWidth(200);
         registerButton.setPrefHeight(45);
-        registerButton.setOnAction(e -> handleStudentRegistration(nameField.getText(), regCodeField.getText()));
+        registerButton.setOnAction(e -> handleStudentRegistration(nameField.getText()));
 
-        formBox.getChildren().addAll(nameLabel, nameField, codeLabel, regCodeField, registerButton);
+        formBox.getChildren().addAll(nameLabel, nameField, registerButton);
         content.getChildren().addAll(titleLabel, formBox);
 
         tab.setContent(content);
@@ -227,7 +219,7 @@ public class LoginController {
         }
     }
 
-    private void handleStudentRegistration(String name, String code) {
+    private void handleStudentRegistration(String name) {
         if (name.trim().isEmpty()) {
             mainApp.showErrorDialog("Input Error", "Please enter your name");
             return;
@@ -239,7 +231,8 @@ public class LoginController {
             Student student = studentManager.register(name.trim());
             if (student != null) {
                 mainApp.showSuccessDialog("Registration Successful",
-                    "Welcome " + student.getName() + "! You can now login with code: " + student.getStudentCode());
+                    "Welcome " + student.getName() + "!\n\nYour student code is: " + student.getStudentCode() +
+                    "\n\nPlease save this code - you'll need it to login!");
                 tabPane.getSelectionModel().select(0); // Switch to login tab
                 studentCodeField.clear();
                 nameField.clear();
