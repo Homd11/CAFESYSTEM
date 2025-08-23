@@ -13,7 +13,10 @@ import Interfaces.ILoyaltyService;
 import Values.Selection;
 import Enums.OrderStatus;
 import Enums.PaymentMethod;
+import Values.Money;
+import Enums.Currency;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -202,6 +205,76 @@ public class OrderProcessor {
         }
     }
 
+    /**
+     * GUI-compatible method for placing orders with payment and discount
+     * Discount is an absolute EGP value to deduct from the order total.
+     */
+    public boolean placeOrderWithPayment(Student student, List<Selection> selections, PaymentMethod paymentMethod, double discountAmount) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student cannot be null");
+        }
+        if (selections == null || selections.isEmpty()) {
+            throw new IllegalArgumentException("Selections cannot be null or empty");
+        }
+        if (discountAmount < 0) {
+            discountAmount = 0.0; // clamp
+        }
+
+        try {
+            Order order = new Order(student.getId());
+
+            // Add items to order based on selections
+            for (Selection selection : selections) {
+                MenuItem menuItem = findMenuItemById(selection.getItemId());
+                if (menuItem == null) {
+                    throw new IllegalArgumentException("Menu item not found: " + selection.getItemId());
+                }
+                order.addItem(menuItem, selection.getQty());
+            }
+
+            if (order.total() == null) {
+                return false;
+            }
+
+            // Calculate payable amount after discount
+            double gross = order.total().getAmount().doubleValue();
+            double payable = Math.max(0.0, gross - discountAmount);
+            Money amountToPay = new Money(payable, order.total().getCurrency());
+
+            // Process payment
+            PaymentProcessor paymentProcessor = new PaymentProcessor();
+            boolean paymentSuccess = paymentProcessor.processPayment(amountToPay, paymentMethod);
+            if (!paymentSuccess) {
+                return false;
+            }
+
+            // Save the order
+            orders.save(order);
+
+            // Save payment record with discounted amount
+            try {
+                PaymentDAO paymentDAO = new PaymentDAO();
+                Payment payment = new Payment(order.getId(), paymentMethod, amountToPay);
+                payment.setSuccessful(true);
+                payment.setTransactionId("GUI-DC-" + System.currentTimeMillis());
+                paymentDAO.save(payment);
+            } catch (Exception e) {
+                System.err.println("Warning: Payment processed but failed to save payment record: " + e.getMessage());
+            }
+
+            // Award loyalty points based on amount paid
+            if (amountToPay != null) {
+                loyalty.awardPoints(student, amountToPay);
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("Error placing order with discount: " + e.getMessage());
+            return false;
+        }
+    }
+
     public void advanceStatus(int orderId, OrderStatus newStatus) {
         Order order = orders.findById(orderId);
         if (order == null) {
@@ -356,6 +429,74 @@ public class OrderProcessor {
                 System.out.println("❌ Error loading orders: " + e.getMessage());
                 break;
             }
+        }
+    }
+
+    /**
+     * Get order history for a specific student
+     * @param studentId The ID of the student
+     * @return List of orders for the student
+     */
+    public List<Order> getOrderHistory(int studentId) {
+        try {
+            return orders.findByStudentId(studentId);
+        } catch (Exception e) {
+            System.err.println("Error getting order history for student " + studentId + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get all orders for admin dashboard
+     * @return List of all orders
+     */
+    public List<Order> getAllOrders() {
+        try {
+            return orders.findAll();
+        } catch (Exception e) {
+            System.err.println("Error loading all orders: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get orders filtered by status
+     * @param status Order status to filter by
+     * @return List of orders with specified status
+     */
+    public List<Order> getOrdersByStatus(OrderStatus status) {
+        try {
+            // Use findAll() and filter in Java since findByStatus() doesn't exist in interface
+            List<Order> allOrders = orders.findAll();
+            return allOrders.stream()
+                .filter(order -> order.getStatus() == status)
+                .toList();
+        } catch (Exception e) {
+            System.err.println("Error loading orders by status: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Update order status (for admin)
+     * @param orderId Order ID to update
+     * @param newStatus New status to set
+     * @return true if successful
+     */
+    public boolean updateOrderStatus(int orderId, OrderStatus newStatus) {
+        try {
+            Order order = orders.findById(orderId);
+            if (order != null) {
+                order.setStatus(newStatus);
+                orders.update(order); // Use update() instead of save() for existing orders
+                System.out.println("✅ Order #" + orderId + " status updated to " + newStatus);
+                return true;
+            }
+            System.err.println("❌ Order not found: " + orderId);
+            return false;
+        } catch (Exception e) {
+            System.err.println("❌ Error updating order status: " + e.getMessage());
+            return false;
         }
     }
 

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.LoginController"
+            styleClass="border-pane hero"
+            style="-fx-background-color: linear-gradient(#0f1115, #1b1f2a, #2b193d, #3a0d1e);">
+   <center>
+      <VBox alignment="CENTER" spacing="18.0" maxWidth="500.0">
+         <children>
+            <!-- Title -->
+            <Label text="🏫 ITI Cafeteria System" textFill="WHITE" alignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="32.0" />
+               </font>
+            </Label>
+
+            <Label text="Welcome! Please choose your login type" textFill="WHITE" alignment="CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+
+            <!-- Tab Pane for different login types -->
+            <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane translucent-panel">
+               <tabs>
+                  <!-- Student Login Tab -->
+                  <Tab text="🎓 Student Login">
+                     <content>
+                        <VBox spacing="12.0" alignment="CENTER">
+                           <padding>
+                              <Insets top="10.0" right="24.0" bottom="20.0" left="24.0" />
+                           </padding>
+                           <children>
+                              <Label text="Enter your student code to login" textFill="#e5e7eb" alignment="CENTER">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Label>
+
+                              <TextField fx:id="studentCodeField" promptText="Enter Student Code (e.g., STU000001)"
+                                        prefWidth="300.0" />
+
+                              <Button fx:id="studentLoginButton" onAction="#handleStudentLogin" text="🔑 Login as Student"
+                                      styleClass="button primary"
+                                      prefWidth="300.0" />
+                           </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+
+                  <!-- Student Registration Tab -->
+                  <Tab text="📝 Register">
+                     <content>
+                        <VBox spacing="12.0" alignment="CENTER">
+                           <padding>
+                              <Insets top="10.0" right="24.0" bottom="20.0" left="24.0" />
+                           </padding>
+                           <children>
+                              <Label text="Create a new student account" textFill="#e5e7eb" alignment="CENTER">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Label>
+
+                              <TextField fx:id="nameField" promptText="Enter Your Full Name"
+                                        prefWidth="300.0" />
+
+                              <Button fx:id="registerButton" onAction="#handleRegister" text="✨ Create Account"
+                                      styleClass="button success"
+                                      prefWidth="300.0" />
+
+                              <Label text="💡 After registration, you'll receive a student code for login"
+                                     textFill="#a3aab2" alignment="CENTER" wrapText="true">
+                                 <font>
+                                    <Font size="12.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+
+                  <!-- Admin Login Tab -->
+                  <Tab text="👨‍💼 Admin">
+                     <content>
+                        <VBox spacing="12.0" alignment="CENTER">
+                           <padding>
+                              <Insets top="10.0" right="24.0" bottom="20.0" left="24.0" />
+                           </padding>
+                           <children>
+                              <Label text="Admin access for system management" textFill="#e5e7eb" alignment="CENTER">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Label>
+
+                              <PasswordField fx:id="adminPasswordField" promptText="Enter Admin Password"
+                                           prefWidth="300.0" />
+
+                              <Button fx:id="adminLoginButton" onAction="#handleAdminLogin" text="🔐 Login as Admin"
+                                      styleClass="button danger"
+                                      prefWidth="300.0" />
+
+                              <Label text="🔑 Default password: admin123"
+                                     textFill="#a3aab2" alignment="CENTER">
+                                 <font>
+                                    <Font size="12.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
+
+            <!-- Footer -->
+            <Label text="🍽️ ITI Cafeteria Management System" textFill="#bdc3c7" alignment="CENTER">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

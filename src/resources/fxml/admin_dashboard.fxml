@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.AdminDashboardController" style="-fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #f9fafc 0%, #eef2f7 100%);">
+   <top>
+      <!-- Admin Navigation Bar -->
+      <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="top-bar" style="-fx-background-color: linear-gradient(from 0% 0% to 100% 0%, #8B0000, #b33939);">
+         <children>
+            <Label fx:id="adminWelcomeLabel" text="👤 Admin Dashboard">
+               <font>
+                  <Font name="Arial Bold" size="18.0" />
+               </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="generateReportButton" onAction="#handleGenerateReport" text="📊 Generate Report" styleClass="button primary" />
+            <Button fx:id="adminLogoutButton" onAction="#handleLogout" text="🚪 Logout" styleClass="button danger" />
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <!-- Menu Management Tab -->
+            <Tab text="🍽️ Menu Management">
+               <content>
+                  <VBox spacing="15.0">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="Menu Items Management" styleClass="heading" />
+
+                        <!-- Add New Item Section -->
+                        <VBox spacing="10.0" styleClass="card">
+                           <children>
+                              <Label text="➕ Add New Menu Item">
+                                 <font>
+                                    <Font name="Arial Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <GridPane hgap="10.0" vgap="10.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                 </columnConstraints>
+                                 <children>
+                                    <Label text="Name:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <TextField fx:id="itemNameField" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+
+                                    <Label text="Price:" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    <TextField fx:id="itemPriceField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                    <Label text="Category:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                    <ComboBox fx:id="itemCategoryCombo" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                 </children>
+                              </GridPane>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Button fx:id="addItemButton" onAction="#handleAddMenuItem" text="➕ Add Item" styleClass="button primary" />
+                                    <Button fx:id="updateItemButton" onAction="#handleUpdateMenuItem" text="✏️ Update Selected" styleClass="button" />
+                                    <Button fx:id="deleteItemButton" onAction="#handleDeleteMenuItem" text="🗑️ Delete Selected" styleClass="button danger" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+
+                        <!-- Menu Items Table -->
+                        <TableView fx:id="menuItemsTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="menuIdColumn" prefWidth="80.0" text="ID" />
+                              <TableColumn fx:id="menuNameColumn" prefWidth="200.0" text="Name" />
+                              <TableColumn fx:id="menuPriceColumn" prefWidth="100.0" text="Price" />
+                              <TableColumn fx:id="menuCategoryColumn" prefWidth="150.0" text="Category" />
+                              <TableColumn fx:id="menuAvailableColumn" prefWidth="100.0" text="Available" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+
+            <!-- Order Management Tab -->
+            <Tab text="📋 Order Management">
+               <content>
+                  <VBox spacing="15.0">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="Orders Management" styleClass="heading" />
+
+                        <!-- Order Filters -->
+                        <HBox spacing="15.0" alignment="CENTER_LEFT">
+                           <children>
+                              <Label text="Filter by Status:" />
+                              <ComboBox fx:id="orderStatusFilter" onAction="#handleOrderStatusFilter" prefWidth="150.0" />
+                              <Button fx:id="refreshOrdersButton" onAction="#handleRefreshOrders" text="🔄 Refresh" styleClass="button primary" />
+                           </children>
+                        </HBox>
+
+                        <!-- Orders Table -->
+                        <TableView fx:id="ordersTable" prefHeight="300.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="orderIdColAdmin" prefWidth="80.0" text="Order ID" />
+                              <TableColumn fx:id="studentNameColumn" prefWidth="150.0" text="Student" />
+                              <TableColumn fx:id="orderDateColAdmin" prefWidth="150.0" text="Date" />
+                              <TableColumn fx:id="orderItemsColAdmin" prefWidth="200.0" text="Items" />
+                              <TableColumn fx:id="orderTotalColAdmin" prefWidth="100.0" text="Total" />
+                              <TableColumn fx:id="orderStatusColAdmin" prefWidth="100.0" text="Status" />
+                           </columns>
+                        </TableView>
+
+                        <!-- Order Actions -->
+                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                           <children>
+                              <Button fx:id="markPreparedButton" onAction="#handleMarkPrepared" text="🍳 Mark Preparing" styleClass="button primary" />
+                              <Button fx:id="markDeliveredButton" onAction="#handleMarkDelivered" text="✅ Mark Ready" styleClass="button success" />
+                              <Button fx:id="cancelOrderButton" onAction="#handleCancelOrder" text="❌ Reset Order" styleClass="button danger" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+
+            <!-- Student Management Tab -->
+            <Tab text="👥 Student Management">
+               <content>
+                  <VBox spacing="15.0">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="Students Management" styleClass="heading" />
+
+                        <!-- Students Table -->
+                        <TableView fx:id="studentsTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="studentIdColumn" prefWidth="80.0" text="ID" />
+                              <TableColumn fx:id="studentNameColAdmin" prefWidth="200.0" text="Name" />
+                              <TableColumn fx:id="studentLoyaltyColumn" prefWidth="120.0" text="Loyalty Points" />
+                              <TableColumn fx:id="studentOrdersColumn" prefWidth="100.0" text="Orders Count" />
+                              <TableColumn fx:id="studentSpentColumn" prefWidth="120.0" text="Total Spent" />
+                           </columns>
+                        </TableView>
+
+                        <!-- Student Actions -->
+                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                           <children>
+                              <Button fx:id="viewStudentDetailsButton" text="👁️ View Details" styleClass="button" />
+                              <Button fx:id="addLoyaltyPointsButton" text="🎁 Add Points" styleClass="button success" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+
+            <!-- Reports Tab -->
+            <Tab text="📊 Reports">
+               <content>
+                  <VBox spacing="20.0">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="System Reports" styleClass="heading" />
+
+                        <!-- Daily Reports -->
+                        <VBox spacing="10.0" styleClass="card-info">
+                           <children>
+                              <Label text="📈 Daily Statistics">
+                                 <font>
+                                    <Font name="Arial Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="dailyOrdersLabel" text="Today's Orders: 0" />
+                              <Label fx:id="dailySalesLabel" text="Today's Sales: 0.00 EGP" />
+                              <Button fx:id="exportDailyButton" text="📤 Export Daily Report" styleClass="button primary" />
+                           </children>
+                        </VBox>
+
+                        <!-- Popular Items -->
+                        <VBox spacing="10.0" styleClass="card-success">
+                           <children>
+                              <Label text="🏆 Popular Items">
+                                 <font>
+                                    <Font name="Arial Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <ListView fx:id="popularItemsList" prefHeight="100.0" />
+                              <Button fx:id="exportPopularButton" text="📤 Export Popular Items" styleClass="button primary" />
+                           </children>
+                        </VBox>
+
+                        <!-- Student Statistics -->
+                        <VBox spacing="10.0" styleClass="card-warning">
+                           <children>
+                              <Label text="👥 Student Statistics">
+                                 <font>
+                                    <Font name="Arial Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="totalStudentsLabel" text="Total Students: 0" />
+                              <Label fx:id="activeStudentsLabel" text="Active Students: 0" />
+                              <Button fx:id="exportStudentsButton" text="📤 Export Student Report" styleClass="button primary" />
+                           </children>
+                        </VBox>
+
+                        <!-- Revenue Statistics -->
+                        <VBox spacing="10.0" styleClass="card-purple">
+                           <children>
+                              <Label text="💰 Revenue Statistics">
+                                 <font>
+                                    <Font name="Arial Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="monthlyRevenueLabel" text="Monthly Revenue: 0.00 EGP" />
+                              <Label fx:id="totalRevenueLabel" text="Total Revenue: 0.00 EGP" />
+                              <Button fx:id="exportRevenueButton" text="📤 Export Revenue Report" styleClass="button primary" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+</BorderPane>

@@ -76,6 +76,7 @@ public class AdminDAO {
     }
 
     public void createDefaultAdmin() {
+        // Fix: Store plain text password instead of hashing
         Admin defaultAdmin = new Admin("admin", "admin123", "System Administrator", "ADMIN");
         save(defaultAdmin);
     }

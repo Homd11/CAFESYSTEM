@@ -151,6 +151,13 @@ public class OrderDAO implements IOrderRepository {
         }
     }
 
+    @Override
+    public List<Order> findByStudentId(int studentId) {
+        // Use the existing implementation
+        return findOrdersByStudent(studentId);
+    }
+
+    @Override
     public List<Order> findAll() {
         String sql = "SELECT id, studentId, status, createdAt FROM orders ORDER BY createdAt DESC";
         List<Order> orders = new ArrayList<>();

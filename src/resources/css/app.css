@@ -1,0 +1,181 @@
+/* Global theme variables */
+.root {
+  -fx-font-family: 'Arial';
+  -fx-background-color: transparent; /* allow screen-specific backgrounds like .hero */
+  -fx-accent-color: #8B0000;       /* deep red */
+  -fx-accent2-color: #b33939;     /* lighter red */
+  -fx-primary-color: #2c3e50;      /* dark slate */
+  -fx-success-color: #27ae60;
+  -fx-danger-color: #e74c3c;
+  -fx-muted-color: #7f8c8d;
+  -fx-surface-color: #ffffff;
+  -fx-surface-alt-color: #f2f4f8;
+}
+
+/* Hero gradient background for entry screens */
+.hero {
+  -fx-background-insets: 0;
+  -fx-background-radius: 0;
+  -fx-background-color: linear-gradient(#0f1115, #1b1f2a, #2b193d, #3a0d1e);
+}
+/* Increase specificity to ensure hero wins over any default */
+.border-pane.hero {
+  -fx-background-insets: 0;
+  -fx-background-radius: 0;
+  -fx-background-color: linear-gradient(#0f1115, #1b1f2a, #2b193d, #3a0d1e);
+}
+
+/* Top navigation bar with gradient */
+.top-bar {
+  -fx-background-insets: 0;
+  -fx-background-radius: 0;
+  -fx-background-color: linear-gradient(#8B0000, #b33939);
+  -fx-padding: 15 15 15 15;
+}
+
+.top-bar .label {
+  -fx-text-fill: white;
+}
+
+/* Buttons */
+.button {
+  -fx-background-color: linear-gradient(#ffffff, #e6e9ef);
+  -fx-background-radius: 8;
+  -fx-padding: 8 14 8 14;
+  -fx-text-fill: -fx-primary-color;
+  -fx-font-weight: bold;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+}
+.button:hover {
+  -fx-background-color: linear-gradient(#ffffff, #dfe3ea);
+}
+.button:pressed {
+  -fx-translate-y: 1;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);
+}
+
+.button:focused {
+  -fx-border-color: derive(#8B0000, 30%);
+  -fx-border-width: 1;
+  -fx-border-radius: 8;
+}
+
+/* Emphasis variants */
+.button.primary {
+  -fx-background-color: linear-gradient(#6f42c1, #9b6dff);
+  -fx-text-fill: white;
+}
+.button.primary:hover {
+  -fx-background-color: linear-gradient(#7c53c9, #a684ff);
+}
+.button.primary:pressed {
+  -fx-background-color: linear-gradient(#5e36a6, #8a5be2);
+}
+
+.button.danger {
+  -fx-background-color: linear-gradient(#e74c3c, #ff6b6b);
+  -fx-text-fill: white;
+}
+.button.danger:hover {
+  -fx-background-color: linear-gradient(#e74c3c, #ff7f7f);
+}
+.button.danger:pressed {
+  -fx-background-color: linear-gradient(#d64541, #ff5858);
+}
+
+.button.success {
+  -fx-background-color: linear-gradient(#27ae60, #58d68d);
+  -fx-text-fill: white;
+}
+.button.success:hover {
+  -fx-background-color: linear-gradient(#27ae60, #6fe19e);
+}
+.button.success:pressed {
+  -fx-background-color: linear-gradient(#22a154, #46c97d);
+}
+
+/* Panels */
+.vbox, .hbox {
+  -fx-spacing: 10;
+}
+
+/* Card components */
+.card {
+  -fx-background-color: #ffffff;
+  -fx-background-radius: 10;
+  -fx-padding: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+}
+.card-info {
+  -fx-background-color: linear-gradient(#e8f4fd, #d9ecfb);
+  -fx-background-radius: 10;
+  -fx-padding: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+}
+.card-success {
+  -fx-background-color: linear-gradient(#f0f8e8, #e3f2d9);
+  -fx-background-radius: 10;
+  -fx-padding: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+}
+.card-warning {
+  -fx-background-color: linear-gradient(#fff2e8, #ffe6d6);
+  -fx-background-radius: 10;
+  -fx-padding: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+}
+.card-purple {
+  -fx-background-color: linear-gradient(#f8e8f8, #f1d9f1);
+  -fx-background-radius: 10;
+  -fx-padding: 12;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 2);
+}
+
+/* Elevation/translucent containers (e.g., on hero) */
+.translucent-panel {
+  -fx-background-color: rgba(255,255,255,0.12);
+  -fx-background-radius: 12;
+  -fx-padding: 8;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 6);
+}
+
+/* Table styling */
+.table-view {
+  -fx-background-color: white;
+  -fx-background-insets: 0;
+  -fx-background-radius: 8;
+  -fx-padding: 6;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 6, 0, 0, 2);
+}
+.table-view .column-header-background {
+  -fx-background-color: linear-gradient(#f2f4f8, #e8ebf2);
+  -fx-background-insets: 0 0 1 0;
+}
+.table-view .column-header, .table-view .filler {
+  -fx-size: 32px;
+  -fx-font-weight: bold;
+}
+.table-row-cell:hover {
+  -fx-background-color: #f7faff;
+}
+.table-row-cell:selected {
+  -fx-background-color: #e7f0ff;
+}
+
+/* TabPane */
+.tab-pane .tab-header-area {
+  -fx-background-color: linear-gradient(#f3f5f9, #e9ecf4);
+  -fx-padding: 2 0 2 0;
+}
+.tab-pane .tab:selected {
+  -fx-background-color: linear-gradient(#ffffff, #f1f4f9);
+}
+.tab-pane .tab-content-area {
+  -fx-padding: 8 0 12 0;
+}
+
+/* SplitPane divider */
+.split-pane:horizontal > .split-pane-divider {
+  -fx-background-color: linear-gradient(#e6ebf2, #dfe5ed);
+  -fx-padding: 0 0.5 0 0.5;
+}
