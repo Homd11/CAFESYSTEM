@@ -223,6 +223,40 @@ public class LoginController implements Initializable {
         }
     }
 
+    // Window control methods
+    @FXML
+    private void handleMinimize() {
+        try {
+            if (mainApp != null && mainApp.getPrimaryStage() != null) {
+                mainApp.getPrimaryStage().setIconified(true);
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Minimize failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleToggleFullScreen() {
+        try {
+            if (mainApp != null && mainApp.getPrimaryStage() != null) {
+                var stage = mainApp.getPrimaryStage();
+                stage.setFullScreen(!stage.isFullScreen());
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Toggle fullscreen failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleClose() {
+        try {
+            Platform.exit();
+        } catch (Exception e) {
+            System.err.println("⚠️ Close failed: " + e.getMessage());
+            System.exit(0);
+        }
+    }
+
     private static void showAlert(String title, String message) {
         try {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);

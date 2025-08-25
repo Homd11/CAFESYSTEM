@@ -85,6 +85,40 @@ public class AdminDashboardController {
         // Default constructor for FXML
     }
 
+    // Window control methods
+    @FXML
+    private void handleMinimize() {
+        try {
+            if (mainApp != null && mainApp.getPrimaryStage() != null) {
+                mainApp.getPrimaryStage().setIconified(true);
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Minimize failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleToggleFullScreen() {
+        try {
+            if (mainApp != null && mainApp.getPrimaryStage() != null) {
+                var stage = mainApp.getPrimaryStage();
+                stage.setFullScreen(!stage.isFullScreen());
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Toggle fullscreen failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleClose() {
+        try {
+            javafx.application.Platform.exit();
+        } catch (Exception e) {
+            System.err.println("⚠️ Close failed: " + e.getMessage());
+            System.exit(0);
+        }
+    }
+
     public AdminDashboardController(Gui mainApp) {
         this.mainApp = mainApp;
         this.currentAdmin = mainApp.getCurrentAdmin();
@@ -533,5 +567,131 @@ public class AdminDashboardController {
         itemNameField.clear();
         itemPriceField.clear();
         itemCategoryCombo.setValue(null);
+    }
+
+    // Student Management handlers
+    @FXML
+    private void handleViewStudentDetails() {
+        Student selected = studentsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            mainApp.showErrorDialog("No Selection", "Please select a student to view details.");
+            return;
+        }
+
+        try {
+            // Get student's order history
+            List<Order> studentOrders = mainApp.getOrderProcessor().getAllOrders().stream()
+                .filter(order -> order.getStudentId() == selected.getId())
+                .toList();
+
+            // Calculate total spent
+            double totalSpent = studentOrders.stream()
+                .mapToDouble(order -> order.total().getAmount().doubleValue())
+                .sum();
+
+            // Get loyalty points
+            int loyaltyPoints = selected.getAccount() != null ? selected.getAccount().getPoints() : 0;
+
+            // Create detailed information
+            String details = String.format(
+                "Student Details:\n\n" +
+                "ID: %d\n" +
+                "Name: %s\n" +
+                "Student Code: %s\n" +
+                "Loyalty Points: %d\n" +
+                "Total Orders: %d\n" +
+                "Total Spent: %.2f EGP\n\n" +
+                "Recent Orders:\n",
+                selected.getId(),
+                selected.getName(),
+                selected.getStudentCode(),
+                loyaltyPoints,
+                studentOrders.size(),
+                totalSpent
+            );
+
+            // Add recent orders (last 5)
+            StringBuilder detailsBuilder = new StringBuilder(details);
+            studentOrders.stream()
+                .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
+                .limit(5)
+                .forEach(order -> {
+                    detailsBuilder.append(String.format("Order #%d - %s - %.2f EGP - %s\n",
+                        order.getId(),
+                        order.getOrderDate().toLocalDate(),
+                        order.total().getAmount().doubleValue(),
+                        order.getStatus()
+                    ));
+                });
+
+            String finalDetails = detailsBuilder.toString();
+
+            // Show details in a dialog
+            Alert detailsAlert = new Alert(Alert.AlertType.INFORMATION);
+            detailsAlert.setTitle("Student Details");
+            detailsAlert.setHeaderText("Details for " + selected.getName());
+            detailsAlert.setContentText(finalDetails);
+            detailsAlert.getDialogPane().setPrefWidth(500);
+            detailsAlert.showAndWait();
+
+        } catch (Exception e) {
+            mainApp.showErrorDialog("Error", "Failed to load student details: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleAddLoyaltyPoints() {
+        Student selected = studentsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            mainApp.showErrorDialog("No Selection", "Please select a student to add loyalty points.");
+            return;
+        }
+
+        // Create input dialog for points
+        TextInputDialog pointsDialog = new TextInputDialog();
+        pointsDialog.setTitle("Add Loyalty Points");
+        pointsDialog.setHeaderText("Add Points to " + selected.getName());
+        pointsDialog.setContentText("Enter points to add:");
+
+        pointsDialog.showAndWait().ifPresent(pointsText -> {
+            try {
+                int pointsToAdd = Integer.parseInt(pointsText.trim());
+
+                if (pointsToAdd <= 0) {
+                    mainApp.showErrorDialog("Invalid Input", "Please enter a positive number of points.");
+                    return;
+                }
+
+                // Ensure student has a loyalty account
+                if (selected.getAccount() == null) {
+                    // Create new loyalty account for the student
+                    LoyaltyAccount newAccount = new LoyaltyAccount();
+                    selected.setAccount(newAccount);
+                }
+
+                // Add points to the account
+                int currentPoints = selected.getAccount().getPoints();
+                selected.getAccount().addPoints(pointsToAdd);
+
+                // Update in database through student manager
+                mainApp.getStudentManager().updateStudent(selected);
+
+                mainApp.showSuccessDialog("Success",
+                    String.format("Added %d points to %s\n" +
+                                "Previous: %d points\n" +
+                                "Current: %d points",
+                                pointsToAdd,
+                                selected.getName(),
+                                currentPoints,
+                                selected.getAccount().getPoints()));
+
+                // Refresh the students table to show updated points
+                loadStudents();
+            } catch (NumberFormatException e) {
+                mainApp.showErrorDialog("Invalid Input", "Please enter a valid number.");
+            } catch (Exception e) {
+                mainApp.showErrorDialog("Error", "Failed to add loyalty points: " + e.getMessage());
+            }
+        });
     }
 }
