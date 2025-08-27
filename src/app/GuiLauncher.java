@@ -14,12 +14,52 @@ import java.util.List;
  */
 public class GuiLauncher {
 
-    // Configuration constants - using your local JDK and JavaFX paths
-    private static final String JAVA_HOME = "java\\jdk-21.0.8";
-    private static final String JAVAFX_PATH = "lib\\javafx\\javafx-sdk-21.0.1\\lib"; // Use JavaFX 21 instead of 24
-    private static final String MYSQL_CONNECTOR = "lib\\mysql-connector-j-9.4.0.jar";
+    // Configuration constants - detect system Java and use relative paths
+    private static final String JAVA_HOME = getJavaHome();
+    private static final String JAVAFX_PATH = "lib" + File.separator + "javafx" + File.separator + "javafx-sdk-21.0.1" + File.separator + "lib";
+    private static final String MYSQL_CONNECTOR = "lib" + File.separator + "mysql-connector-j-9.4.0.jar";
     private static final String OUTPUT_DIR = "out";
     private static final String MAIN_CLASS = "GUI.Gui";
+    
+    /**
+     * Detects the Java home directory from environment or system
+     */
+    private static String getJavaHome() {
+        // First try JAVA_HOME environment variable
+        String javaHome = System.getenv("JAVA_HOME");
+        if (javaHome != null && !javaHome.isEmpty()) {
+            return javaHome;
+        }
+        
+        // Fallback to system property
+        javaHome = System.getProperty("java.home");
+        if (javaHome != null && !javaHome.isEmpty()) {
+            return javaHome;
+        }
+        
+        // Last resort - try to find Java on PATH
+        String javaCmd = isWindows() ? "javac.exe" : "javac";
+        String pathEnv = System.getenv("PATH");
+        if (pathEnv != null) {
+            String[] paths = pathEnv.split(File.pathSeparator);
+            for (String path : paths) {
+                File javacFile = new File(path, javaCmd);
+                if (javacFile.exists()) {
+                    // Return parent of bin directory
+                    return javacFile.getParentFile().getParent();
+                }
+            }
+        }
+        
+        return ""; // Will cause validation to fail with proper error message
+    }
+    
+    /**
+     * Checks if running on Windows
+     */
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
+    }
 
     public static void main(String[] args) {
         GuiLauncher launcher = new GuiLauncher();
@@ -55,30 +95,40 @@ public class GuiLauncher {
      * Validates that all required paths and files exist
      */
     private boolean validateEnvironment() {
-        // Check local JDK
-        String javacPath = JAVA_HOME + "\\bin\\javac.exe";
-        String javaPath = JAVA_HOME + "\\bin\\java.exe";
+        // Check Java installation
+        String javacCmd = isWindows() ? "javac.exe" : "javac";
+        String javaCmd = isWindows() ? "java.exe" : "java";
+        String javacPath = JAVA_HOME + File.separator + "bin" + File.separator + javacCmd;
+        String javaPath = JAVA_HOME + File.separator + "bin" + File.separator + javaCmd;
 
         if (!new File(javacPath).exists()) {
             System.err.println("❌ Java compiler not found at: " + javacPath);
+            System.err.println("💡 Please ensure Java JDK is installed and JAVA_HOME is set correctly.");
+            System.err.println("   Current JAVA_HOME: " + JAVA_HOME);
+            System.err.println("   You can also add javac to your PATH environment variable.");
             return false;
         }
 
         if (!new File(javaPath).exists()) {
             System.err.println("❌ Java runtime not found at: " + javaPath);
+            System.err.println("💡 Please ensure Java JDK is installed and JAVA_HOME is set correctly.");
             return false;
         }
 
-        // Check JavaFX
+        // Check JavaFX (make it optional for now)
         if (!new File(JAVAFX_PATH).exists()) {
-            System.err.println("❌ JavaFX not found at: " + JAVAFX_PATH);
-            System.err.println("Please download JavaFX SDK and place it in the correct path.");
+            System.err.println("⚠️  JavaFX not found at: " + JAVAFX_PATH);
+            System.err.println("💡 JavaFX SDK is required for the GUI. Please:");
+            System.err.println("   1. Download JavaFX SDK 21 from https://openjfx.io/");
+            System.err.println("   2. Extract it to: " + JAVAFX_PATH.replace(File.separator + "lib", ""));
+            System.err.println("   3. Or install JavaFX via your system package manager");
             return false;
         }
 
         // Check MySQL Connector
         if (!new File(MYSQL_CONNECTOR).exists()) {
             System.err.println("❌ MySQL Connector not found at: " + MYSQL_CONNECTOR);
+            System.err.println("💡 The MySQL connector JAR should be present in the lib directory.");
             return false;
         }
 
@@ -99,9 +149,10 @@ public class GuiLauncher {
             // Copy resources (FXML, CSS) to output directory
             copyResources();
 
-            // Build compilation command using local JDK
+            // Build compilation command using detected Java
             List<String> command = new ArrayList<>();
-            command.add(JAVA_HOME + "\\bin\\javac.exe");
+            String javacCmd = isWindows() ? "javac.exe" : "javac";
+            command.add(JAVA_HOME + File.separator + "bin" + File.separator + javacCmd);
             command.add("--module-path");
             command.add(JAVAFX_PATH);
             command.add("--add-modules");
@@ -112,14 +163,14 @@ public class GuiLauncher {
             command.add(OUTPUT_DIR);
 
             // Add all Java source files
-            addSourceFiles(command, "src\\GUI\\");
-            addSourceFiles(command, "src\\Core\\");
-            addSourceFiles(command, "src\\Services\\");
-            addSourceFiles(command, "src\\DB\\");
-            addSourceFiles(command, "src\\Enums\\");
-            addSourceFiles(command, "src\\Values\\");
-            addSourceFiles(command, "src\\Interfaces\\");
-            addSourceFiles(command, "src\\app\\");
+            addSourceFiles(command, "src" + File.separator + "GUI" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "Core" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "Services" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "DB" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "Enums" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "Values" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "Interfaces" + File.separator);
+            addSourceFiles(command, "src" + File.separator + "app" + File.separator);
 
             // Execute compilation
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -152,18 +203,22 @@ public class GuiLauncher {
     private void copyResources() {
         try {
             // Create resources directories in output
-            File fxmlDir = new File(OUTPUT_DIR + "\\resources\\fxml");
-            File cssDir = new File(OUTPUT_DIR + "\\resources\\css");
+            File fxmlDir = new File(OUTPUT_DIR + File.separator + "resources" + File.separator + "fxml");
+            File cssDir = new File(OUTPUT_DIR + File.separator + "resources" + File.separator + "css");
             fxmlDir.mkdirs();
             cssDir.mkdirs();
 
             // Copy FXML files
-            copyFile("src\\resources\\fxml\\login.fxml", OUTPUT_DIR + "\\resources\\fxml\\login.fxml");
-            copyFile("src\\resources\\fxml\\student_dashboard.fxml", OUTPUT_DIR + "\\resources\\fxml\\student_dashboard.fxml");
-            copyFile("src\\resources\\fxml\\admin_dashboard.fxml", OUTPUT_DIR + "\\resources\\fxml\\admin_dashboard.fxml");
+            copyFile("src" + File.separator + "resources" + File.separator + "fxml" + File.separator + "login.fxml", 
+                    OUTPUT_DIR + File.separator + "resources" + File.separator + "fxml" + File.separator + "login.fxml");
+            copyFile("src" + File.separator + "resources" + File.separator + "fxml" + File.separator + "student_dashboard.fxml", 
+                    OUTPUT_DIR + File.separator + "resources" + File.separator + "fxml" + File.separator + "student_dashboard.fxml");
+            copyFile("src" + File.separator + "resources" + File.separator + "fxml" + File.separator + "admin_dashboard.fxml", 
+                    OUTPUT_DIR + File.separator + "resources" + File.separator + "fxml" + File.separator + "admin_dashboard.fxml");
 
             // Copy CSS
-            copyFile("src\\resources\\css\\app.css", OUTPUT_DIR + "\\resources\\css\\app.css");
+            copyFile("src" + File.separator + "resources" + File.separator + "css" + File.separator + "app.css", 
+                    OUTPUT_DIR + File.separator + "resources" + File.separator + "css" + File.separator + "app.css");
 
             System.out.println("✅ Resources copied to output directory");
         } catch (IOException e) {
@@ -214,9 +269,10 @@ public class GuiLauncher {
      */
     private void runApplication() {
         try {
-            // Build runtime command using local JDK
+            // Build runtime command using detected Java
             List<String> command = new ArrayList<>();
-            command.add(JAVA_HOME + "\\bin\\java.exe");
+            String javaCmd = isWindows() ? "java.exe" : "java";
+            command.add(JAVA_HOME + File.separator + "bin" + File.separator + javaCmd);
             command.add("--module-path");
             command.add(JAVAFX_PATH);
             command.add("--add-modules");
@@ -235,7 +291,7 @@ public class GuiLauncher {
             command.add("javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED");
 
             command.add("-cp");
-            command.add(OUTPUT_DIR + ";" + MYSQL_CONNECTOR);
+            command.add(OUTPUT_DIR + File.pathSeparator + MYSQL_CONNECTOR);
             command.add(MAIN_CLASS);
 
             // Execute the application
