@@ -151,11 +151,7 @@ public class OrderDAO implements IOrderRepository {
         }
     }
 
-    @Override
-    public List<Order> findByStudentId(int studentId) {
-        // Use the existing implementation
-        return findOrdersByStudent(studentId);
-    }
+
 
     @Override
     public List<Order> findAll() {

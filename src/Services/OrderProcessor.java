@@ -439,7 +439,7 @@ public class OrderProcessor {
      */
     public List<Order> getOrderHistory(int studentId) {
         try {
-            return orders.findByStudentId(studentId);
+            return orders.findOrdersByStudent(studentId);
         } catch (Exception e) {
             System.err.println("Error getting order history for student " + studentId + ": " + e.getMessage());
             return new ArrayList<>();

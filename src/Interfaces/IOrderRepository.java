@@ -11,6 +11,7 @@ public interface IOrderRepository {
     public void update(Order order);
 
     // Add the two missing methods for order history functionality
-    public List<Order> findByStudentId(int studentId);
     public List<Order> findAll();
+
+    List<Order> findOrdersByStudent(int studentId);
 }
